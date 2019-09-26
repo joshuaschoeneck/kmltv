@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KML Display</title>
+<style>
+body {
+margin: 0px;
+}
+
+#time {
+width: 1920px;
+height: 550px;
+background-color: transparent;
+border: solid transparent 1px;
+position: fixed;
+top: 0px;
+left: 0px;
+text-align: center;
+line-height: 550px;
+font-family: Arial;
+font-size: 550px;
+color: white;
+}
+
+#counter {
+width: 1920px;
+height: 540px;
+background-color: transparent;
+border: solid transparent 0px;
+position: fixed;
+top: 540px;
+left: 0px;
+text-align: center;
+line-height: 540px;
+font-family: Arial;
+font-size: 540px;
+color: white;
+}
+
+#warn {
+width: 1820px;
+height: 980px;
+background-color: transparent;
+border: solid transparent 50px;
+position: fixed;
+top: 0px;
+left: 0px;
+z-index: 10;
+}
+
+</style>
+
+<script>
+    var ch1 = 9;
+    var cm1 = 15;
+    var cs1 = 0;
+    var ch2 = 9;
+    var cm2 = 29;
+    var cs2 = 0;
+
+function startTime() {
+    var today = new Date();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    var s = today.getSeconds();
+
+    var current_time = h*3600+m*60+s;
+    var counter_time1 = ch1*3600+cm1*60+cs1;
+    var counter_time2 = ch2*3600+cm2*60+cs2;
+    var diftime1 = counter_time1 - current_time;
+    var diftime2 = counter_time2 - current_time;
+
+	var ampm = 'AM'
+	if (h >= 12) {
+		ampm = 'PM';
+		}
+		else {
+		ampm = 'AM';
+		}
+	if (h > 12) {
+		h = h - 12;
+		}
+	if (h == 0) {
+		h = 12;
+		}	
+    m = checkTime(m);
+    s = checkTime(s);
+    document.getElementById('time').innerHTML = h + ':' + m + '<span style="font-size:40%">' + ampm + '</span>';
+
+    var dh1 = Math.trunc(diftime1/3600);
+    var dh2 = Math.trunc(diftime2/3600);
+    
+    if (diftime2<0 || dh1>0) 
+    {
+	document.getElementById('time').style.top = '270px';    
+	document.getElementById('counter').style.visibility = 'hidden';
+        document.getElementById('warn').style.visibility = 'hidden';
+    } else {
+        document.getElementById('time').style.top = '0px';    
+	document.getElementById('counter').style.visibility = 'visible';
+        document.getElementById('warn').style.visibility = 'visible';
+    }
+    if (diftime1<0)
+    {
+        var dm = Math.trunc((diftime2 - dh2*3600)/60);
+        var ds = diftime2 - dh2*3600 - dm*60;
+        ds = checkTime(ds);
+    } else {
+	var dm = Math.trunc((diftime1 - dh1*3600)/60);
+        var ds = diftime1 - dh1*3600 - dm*60;
+        ds = checkTime(ds);
+    }
+
+    var secleft = parseInt(dm)*60 + parseInt(ds);
+    if (secleft > 300) {document.getElementById('warn').style.borderColor = "green"}
+    else if (secleft > 60) {document.getElementById('warn').style.borderColor = "yellow"}
+    else {document.getElementById('warn').style.borderColor = "red"}
+    document.getElementById('counter').innerHTML = dm + ':' + ds;
+    var t = setTimeout(startTime, 500);
+}
+function checkTime(i) {
+    if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+
+function loadTime() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+     var times = this.responseText.split(',');
+     ch1 = parseInt(times[0]);
+     cm1 = parseInt(times[1]);
+     cs1 = parseInt(times[2]);
+     ch2 = parseInt(times[3]);
+     cm2 = parseInt(times[4]);
+     cs2 = parseInt(times[5]);
+    }
+  };
+  xhttp.open("GET", "https://script.google.com/macros/s/AKfycbxMVy9UbQ4wdb7HyTWNj_JecCIXmkOk9H-N9cHvEIHNIpQ28Jcg/exec", true);
+  xhttp.send();
+  setTimeout(loadTime, 6000);
+}
+</script>
+
+</head>
+<body style="background-color:#000000;" onload="startTime()">
+<div id="time">
+</div>
+<div id="counter">
+</div>
+<div id="warn">
+</div>
+<script>
+loadTime();
+</script>
+</body>
+</html>
